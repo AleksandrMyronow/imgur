@@ -1,21 +1,41 @@
+// import 'babel-core/register';
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Loader from 'react-loader';
+import Header from './components/Header';
+import ImgurImageList from './components/ImgurImageList';
+import { searchGallery } from './services/imgur';
 
-class App extends Component {
+export default class App extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {images: [], page: 0, loaded: false};
+  }
+
+  async loadImages(page = 0) {
+    this.setState({loaded: false});
+
+    try {
+      let result = await searchGallery(undefined, undefined, page);
+      this.setState({images: result.data, page: page, loaded: true});
+    } catch (e) {
+      this.setState({loaded: true});
+    }
+
+  }
+
+  componentDidMount() {
+    this.loadImages();
+  }
+
   render() {
+
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
+      <Loader loaded={this.state.loaded}>
+        <Header page={this.state.page} loadImages={this.loadImages.bind(this)} />
+        <ImgurImageList images={this.state.images} />
+      </Loader>
     );
   }
 }
 
-export default App;
